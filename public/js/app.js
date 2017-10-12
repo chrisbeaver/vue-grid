@@ -1679,12 +1679,59 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 module.exports = {
     props: {
         columns: Array,
         filterKey: String,
-        endPoint: String
+        endPoint: String,
+        limit: Number,
+        orderBy: String,
+        pageRange: {
+            type: Number,
+            default: 3
+        },
+        marginPage: {
+            type: Number,
+            default: 1
+        },
+        initialPage: {
+            type: Number,
+            default: 0
+        },
+        prevText: {
+            type: String,
+            default: 'Prev'
+        },
+        nextText: {
+            type: String,
+            default: 'Next'
+        }
     },
     data: function data() {
         var sortOrders = {};
@@ -1696,7 +1743,8 @@ module.exports = {
             sortKey: '',
             searchQuery: '',
             sortOrders: sortOrders,
-            data: []
+            data: [],
+            selected: this.initialPage
         };
     },
     computed: {
@@ -1705,21 +1753,87 @@ module.exports = {
             var filterKey = this.searchQuery && this.searchQuery.toLowerCase();
             var order = this.sortOrders[sortKey] || 1;
             var data = this.data;
-            if (filterKey) {
-                data = data.filter(function (row) {
-                    return Object.keys(row).some(function (key) {
-                        return String(row[key]).toLowerCase().indexOf(filterKey) > -1;
-                    });
-                });
-            }
-            if (sortKey) {
-                data = data.slice().sort(function (a, b) {
-                    a = a[sortKey];
-                    b = b[sortKey];
-                    return (a === b ? 0 : a > b ? 1 : -1) * order;
-                });
-            }
+
+            // if (filterKey) {
+            //     data = this.data
+            // }
+            // if (sortKey) {
+            //     data = data.slice().sort(function (a, b) {
+            //         a = a[sortKey]
+            //         b = b[sortKey]
+            //         return (a === b ? 0 : a > b ? 1 : -1) * order
+            //     })
+            // }
             return data;
+        },
+        pages: function pages() {
+            var _this = this;
+
+            var items = {};
+            if (this.total <= this.pageRange) {
+                for (var index = 0; index < this.total; index++) {
+                    var page = {
+                        index: index,
+                        content: index + 1,
+                        selected: index === this.selected
+                    };
+                    items[index] = page;
+                }
+            } else {
+                var leftPart = this.pageRange / 2;
+                var rightPart = this.pageRange - leftPart;
+                if (this.selected < leftPart) {
+                    leftPart = this.selected;
+                    rightPart = this.pageRange - leftPart;
+                } else if (this.selected > this.total - this.pageRange / 2) {
+                    rightPart = this.total - this.selected;
+                    leftPart = this.pageRange - rightPart;
+                }
+                var setPageItem = function setPageItem(index) {
+                    var page = {
+                        index: index,
+                        content: index + 1,
+                        selected: index === _this.selected
+                    };
+                    items[index] = page;
+                };
+                var setBreakView = function setBreakView(index) {
+                    var breakView = {
+                        content: '...',
+                        disabled: true
+                    };
+                    items[index] = breakView;
+                };
+                // 1st - loop thru low end of margin pages
+                for (var i = 0; i < this.marginPages; i++) {
+                    setPageItem(i);
+                }
+                // 2nd - loop thru high end of margin pages
+                for (var _i = this.total - 1; _i >= this.total - this.marginPages; _i--) {
+                    setPageItem(_i);
+                }
+                // 3rd - loop thru selected range
+                var selectedRangeLow = 0;
+                if (this.selected - this.pageRange > 0) {
+                    selectedRangeLow = this.selected - this.pageRange;
+                }
+                var selectedRangeHigh = this.total;
+                if (this.selected + this.pageRange < this.total) {
+                    selectedRangeHigh = this.selected + this.pageRange;
+                }
+                for (var _i2 = selectedRangeLow; _i2 <= selectedRangeHigh && _i2 <= this.total - 1; _i2++) {
+                    setPageItem(_i2);
+                }
+                // Check if there is breakView in the left of selected range
+                if (selectedRangeLow > this.marginPages) {
+                    setBreakView(selectedRangeLow - 1);
+                }
+                // Check if there is breakView in the right of selected range
+                if (selectedRangeHigh + 1 < this.total - this.marginPages) {
+                    setBreakView(selectedRangeHigh + 1);
+                }
+            }
+            return items;
         }
     },
     filters: {
@@ -1731,16 +1845,50 @@ module.exports = {
         sortBy: function sortBy(key) {
             this.sortKey = key;
             this.sortOrders[key] = this.sortOrders[key] * -1;
+        },
+        filterHandler: function filterHandler(event) {
+            var _this2 = this;
+
+            console.log(event);
+            axios.post(this.endPoint, { filter: this.searchQuery,
+                limit: this.limit,
+                orderBy: this.orderBy }).then(function (response) {
+                _this2.data = response.data.results;
+                _this2.total = response.data.total;
+            }).catch(function (e) {
+                _this2.errors.push(e);
+            });
+        },
+        handlePageSelected: function handlePageSelected(selected) {
+            if (this.selected === selected) return;
+            this.selected = selected;
+            this.clickHandler(this.selected + 1);
+        },
+        prevPage: function prevPage() {
+            if (this.selected <= 0) return;
+            this.selected--;
+            this.clickHandler(this.selected + 1);
+        },
+        nextPage: function nextPage() {
+            if (this.selected >= this.pageCount - 1) return;
+            this.selected++;
+            this.clickHandler(this.selected + 1);
+        },
+        firstPageSelected: function firstPageSelected() {
+            return this.selected === 0;
+        },
+        lastPageSelected: function lastPageSelected() {
+            return this.selected === this.pageCount - 1 || this.pageCount === 0;
         }
     },
     created: function created() {
-        var _this = this;
+        var _this3 = this;
 
-        axios.post(this.endPoint).then(function (response) {
-            _this.data = response.data;
-            _this.total = response.data.length;
+        axios.post(this.endPoint, { limit: this.limit }).then(function (response) {
+            _this3.data = response.data.results;
+            _this3.total = response.data.total;
         }).catch(function (e) {
-            _this.errors.push(e);
+            _this3.errors.push(e);
         });
     }
 };
@@ -31923,6 +32071,7 @@ var render = function() {
           attrs: { name: "query" },
           domProps: { value: _vm.searchQuery },
           on: {
+            keyup: _vm.filterHandler,
             input: function($event) {
               if ($event.target.composing) {
                 return
@@ -31984,6 +32133,235 @@ var render = function() {
           })
         )
       ])
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "row" }, [
+      !_vm.noLiSurround
+        ? _c(
+            "ul",
+            { staticClass: "paginator" },
+            [
+              _c(
+                "li",
+                {
+                  class: [_vm.prevClass, { disabled: _vm.firstPageSelected() }]
+                },
+                [
+                  _c(
+                    "a",
+                    {
+                      class: _vm.prevLinkClass,
+                      attrs: { tabindex: "0" },
+                      on: {
+                        click: function($event) {
+                          _vm.prevPage()
+                        },
+                        keyup: function($event) {
+                          if (
+                            !("button" in $event) &&
+                            _vm._k($event.keyCode, "enter", 13)
+                          ) {
+                            return null
+                          }
+                          _vm.prevPage()
+                        }
+                      }
+                    },
+                    [_vm._t("prevContent", [_vm._v(_vm._s(_vm.prevText))])],
+                    2
+                  )
+                ]
+              ),
+              _vm._v(" "),
+              _vm._l(_vm.pages, function(page) {
+                return _c(
+                  "li",
+                  {
+                    class: [
+                      _vm.pageClass,
+                      page.selected ? _vm.activeClass : "",
+                      { disabled: page.disabled }
+                    ]
+                  },
+                  [
+                    page.disabled
+                      ? _c(
+                          "a",
+                          {
+                            class: _vm.pageLinkClass,
+                            attrs: { tabindex: "0" }
+                          },
+                          [_vm._v(_vm._s(page.content))]
+                        )
+                      : _c(
+                          "a",
+                          {
+                            class: _vm.pageLinkClass,
+                            attrs: { tabindex: "0" },
+                            on: {
+                              click: function($event) {
+                                _vm.handlePageSelected(page.index)
+                              },
+                              keyup: function($event) {
+                                if (
+                                  !("button" in $event) &&
+                                  _vm._k($event.keyCode, "enter", 13)
+                                ) {
+                                  return null
+                                }
+                                _vm.handlePageSelected(page.index)
+                              }
+                            }
+                          },
+                          [_vm._v(_vm._s(page.content))]
+                        )
+                  ]
+                )
+              }),
+              _vm._v(" "),
+              _c(
+                "li",
+                {
+                  class: [_vm.nextClass, { disabled: _vm.lastPageSelected() }]
+                },
+                [
+                  _c(
+                    "a",
+                    {
+                      class: _vm.nextLinkClass,
+                      attrs: { tabindex: "0" },
+                      on: {
+                        click: function($event) {
+                          _vm.nextPage()
+                        },
+                        keyup: function($event) {
+                          if (
+                            !("button" in $event) &&
+                            _vm._k($event.keyCode, "enter", 13)
+                          ) {
+                            return null
+                          }
+                          _vm.nextPage()
+                        }
+                      }
+                    },
+                    [_vm._t("nextContent", [_vm._v(_vm._s(_vm.nextText))])],
+                    2
+                  )
+                ]
+              )
+            ],
+            2
+          )
+        : _c(
+            "div",
+            { class: _vm.containerClass },
+            [
+              _c(
+                "a",
+                {
+                  class: [
+                    _vm.prevLinkClass,
+                    { disabled: _vm.firstPageSelected() }
+                  ],
+                  attrs: { tabindex: "0" },
+                  on: {
+                    click: function($event) {
+                      _vm.prevPage()
+                    },
+                    keyup: function($event) {
+                      if (
+                        !("button" in $event) &&
+                        _vm._k($event.keyCode, "enter", 13)
+                      ) {
+                        return null
+                      }
+                      _vm.prevPage()
+                    }
+                  }
+                },
+                [_vm._t("prevContent", [_vm._v(_vm._s(_vm.prevText))])],
+                2
+              ),
+              _vm._v(" "),
+              _vm._l(_vm.pages, function(page) {
+                return [
+                  page.disabled
+                    ? _c(
+                        "a",
+                        {
+                          class: [
+                            _vm.pageLinkClass,
+                            page.selected ? _vm.activeClass : "",
+                            { disabled: page.disabled }
+                          ],
+                          attrs: { tabindex: "0" }
+                        },
+                        [_vm._v(_vm._s(page.content))]
+                      )
+                    : _c(
+                        "a",
+                        {
+                          class: [
+                            _vm.pageLinkClass,
+                            { active: page.selected, disabled: page.disabled }
+                          ],
+                          attrs: { tabindex: "0" },
+                          on: {
+                            click: function($event) {
+                              _vm.handlePageSelected(page.index)
+                            },
+                            keyup: function($event) {
+                              if (
+                                !("button" in $event) &&
+                                _vm._k($event.keyCode, "enter", 13)
+                              ) {
+                                return null
+                              }
+                              _vm.handlePageSelected(page.index)
+                            }
+                          }
+                        },
+                        [
+                          _vm._v(
+                            "\n                    " +
+                              _vm._s(page.content) +
+                              "\n                    "
+                          )
+                        ]
+                      )
+                ]
+              }),
+              _vm._v(" "),
+              _c(
+                "a",
+                {
+                  class: [
+                    _vm.nextLinkClass,
+                    { disabled: _vm.lastPageSelected() }
+                  ],
+                  attrs: { tabindex: "0" },
+                  on: {
+                    click: function($event) {
+                      _vm.nextPage()
+                    },
+                    keyup: function($event) {
+                      if (
+                        !("button" in $event) &&
+                        _vm._k($event.keyCode, "enter", 13)
+                      ) {
+                        return null
+                      }
+                      _vm.nextPage()
+                    }
+                  }
+                },
+                [_vm._t("nextContent", [_vm._v(_vm._s(_vm.nextText))])],
+                2
+              )
+            ],
+            2
+          )
     ])
   ])
 }

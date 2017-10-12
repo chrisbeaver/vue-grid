@@ -81,7 +81,7 @@
                 <div class="title m-b-md">
                     Vue Grid
                 </div>  
-                <crypto-grid :columns="gridColumns" :end-point="endPoint">
+                <crypto-grid :columns="gridColumns" :end-point="endPoint" :limit="limit" :order-by="orderBy">
                 </crypto-grid>
             </div>
         </div>
@@ -91,7 +91,9 @@
                 el: '#app',
                 data: {
                     gridColumns: ['name', 'start_date', 'end_date', 'size', 'weight'],
-                    endPoint: "http://local.vuegrid.com:8000/"
+                    endPoint: "http://local.vuegrid.com:8000/",
+                    limit: 10,
+                    orderBy: "name"
                 }
             })
         </script>

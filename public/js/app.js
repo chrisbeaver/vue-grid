@@ -1700,22 +1700,21 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
-//
-//
-//
-//
 
 module.exports = {
     props: {
         columns: Array,
+        widths: Array,
+        hidden: Array,
+        filterable: Array,
         filterKey: String,
         endPoint: String,
         limit: Number,
-        orderBy: String,
         pageRange: {
             type: Number,
             default: 3
         },
+        orderBy: String,
         marginPage: {
             type: Number,
             default: 1
@@ -1744,7 +1743,7 @@ module.exports = {
             searchQuery: '',
             sortOrders: sortOrders,
             data: [],
-            selected: this.initialPage
+            selected: 1
         };
     },
     computed: {
@@ -1845,34 +1844,58 @@ module.exports = {
         sortBy: function sortBy(key) {
             this.sortKey = key;
             this.sortOrders[key] = this.sortOrders[key] * -1;
+            this.orderBy = key;
+            this.filterHandler();
         },
-        filterHandler: function filterHandler(event) {
+        selectPageHandler: function selectPageHandler(selected) {
             var _this2 = this;
 
-            console.log(event);
+            this.selected = selected;
+
             axios.post(this.endPoint, { filter: this.searchQuery,
+                filterable: this.filterable,
                 limit: this.limit,
-                orderBy: this.orderBy }).then(function (response) {
+                orderBy: this.orderBy,
+                sortOrder: this.sortOrders[this.orderBy],
+                offset: selected - 1
+            }).then(function (response) {
                 _this2.data = response.data.results;
                 _this2.total = response.data.total;
             }).catch(function (e) {
                 _this2.errors.push(e);
             });
         },
+        filterHandler: function filterHandler(event) {
+            var _this3 = this;
+
+            this.selected = 1;
+            console.log(this.columns);
+            axios.post(this.endPoint, { filter: this.searchQuery,
+                filterable: this.filterable,
+                limit: this.limit,
+                orderBy: this.orderBy
+            }).then(function (response) {
+                _this3.data = response.data.results;
+                _this3.total = response.data.total;
+            }).catch(function (e) {
+                _this3.errors.push(e);
+            });
+        },
         handlePageSelected: function handlePageSelected(selected) {
             if (this.selected === selected) return;
             this.selected = selected;
-            this.clickHandler(this.selected + 1);
+            // this.clickHandler(this.selected)
+            this.filterHandler();
         },
         prevPage: function prevPage() {
             if (this.selected <= 0) return;
             this.selected--;
-            this.clickHandler(this.selected + 1);
+            this.selectPageHandler(this.selected);
         },
         nextPage: function nextPage() {
             if (this.selected >= this.pageCount - 1) return;
             this.selected++;
-            this.clickHandler(this.selected + 1);
+            this.selectPageHandler(this.selected);
         },
         firstPageSelected: function firstPageSelected() {
             return this.selected === 0;
@@ -1882,13 +1905,14 @@ module.exports = {
         }
     },
     created: function created() {
-        var _this3 = this;
+        var _this4 = this;
 
-        axios.post(this.endPoint, { limit: this.limit }).then(function (response) {
-            _this3.data = response.data.results;
-            _this3.total = response.data.total;
+        axios.post(this.endPoint, { limit: this.limit,
+            orderBy: this.orderBy }).then(function (response) {
+            _this4.data = response.data.results;
+            _this4.total = response.data.total;
         }).catch(function (e) {
-            _this3.errors.push(e);
+            _this4.errors.push(e);
         });
     }
 };
@@ -4287,7 +4311,7 @@ exports = module.exports = __webpack_require__("./node_modules/css-loader/lib/cs
 
 
 // module
-exports.push([module.i, "\nbody[data-v-1616a38e] {\n  font-family: Helvetica Neue, Arial, sans-serif;\n  font-size: 14px;\n  color: #444;\n}\ntable[data-v-1616a38e] {\n  border: 2px solid #42b983;\n  border-radius: 3px;\n  background-color: #fff;\n}\nth[data-v-1616a38e] {\n  background-color: #42b983;\n  color: rgba(255,255,255,0.66);\n  cursor: pointer;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n}\ntd[data-v-1616a38e] {\n  background-color: #f9f9f9;\n}\nth[data-v-1616a38e], td[data-v-1616a38e] {\n  min-width: 120px;\n  padding: 10px 20px;\n}\nth.active[data-v-1616a38e] {\n  color: #fff;\n}\nth.active .arrow[data-v-1616a38e] {\n  opacity: 1;\n}\n.arrow[data-v-1616a38e] {\n  display: inline-block;\n  vertical-align: middle;\n  width: 0;\n  height: 0;\n  margin-left: 5px;\n  opacity: 0.66;\n}\n.arrow.asc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-bottom: 4px solid #fff;\n}\n.arrow.dsc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-top: 4px solid #fff;\n}\n", ""]);
+exports.push([module.i, "\nbody[data-v-1616a38e] {\n  font-family: Helvetica Neue, Arial, sans-serif;\n  font-size: 14px;\n  color: #444;\n}\na[data-v-1616a38e] {\n  cursor: pointer;\n}\ntable[data-v-1616a38e] {\n  /*border: 2px solid #42b983;*/\n  border: 2px solid #99c1bf;\n  border-radius: 3px;\n  background-color: #fff;\n  table-layout: fixed;\n  border-spacing: unset;\n}\nth[data-v-1616a38e] {\n  /*background-color: #42b983;*/\n  background-color: #99c1bf;\n  color: #fff;\n  cursor: pointer;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n  text-align: center;\n}\n\n/*td {\n  background-color: #f9f9f9;\n}*/\ntbody tr[data-v-1616a38e]:nth-child(odd) {\n    background-color: #f9f9f9;\n}\nth[data-v-1616a38e], td[data-v-1616a38e] {\n  min-width: 120px;\n  padding: 10px 20px;\n}\nth.active[data-v-1616a38e] {\n  color: #fff;\n}\nth.active .arrow[data-v-1616a38e] {\n  opacity: 1;\n}\nli[data-v-1616a38e] {\n    display: inline-block;\n    margin: 4px;\n    zoom: 1;\n}\n.arrow[data-v-1616a38e] {\n  display: inline-block;\n  vertical-align: middle;\n  width: 0;\n  height: 0;\n  margin-left: 5px;\n  opacity: 0.66;\n}\n.arrow.asc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-bottom: 4px solid #fff;\n}\n.arrow.dsc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-top: 4px solid #fff;\n}\n", ""]);
 
 // exports
 
@@ -32084,232 +32108,157 @@ var render = function() {
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "row" }, [
-      _c("table", [
-        _c("thead", [
-          _c(
-            "tr",
-            _vm._l(_vm.columns, function(key) {
-              return _c(
-                "th",
-                {
-                  class: { active: _vm.sortKey == key },
-                  on: {
-                    click: function($event) {
-                      _vm.sortBy(key)
+      _c(
+        "table",
+        [
+          _vm._l(_vm.widths, function(w) {
+            return _c("col", { attrs: { width: w } })
+          }),
+          _vm._v(" "),
+          _c("thead", [
+            _c(
+              "tr",
+              _vm._l(_vm.columns, function(key) {
+                return _c(
+                  "th",
+                  {
+                    directives: [
+                      {
+                        name: "show",
+                        rawName: "v-show",
+                        value: !_vm.hidden.includes(key),
+                        expression: "! hidden.includes(key)"
+                      }
+                    ],
+                    class: { active: _vm.sortKey == key },
+                    on: {
+                      click: function($event) {
+                        _vm.sortBy(key)
+                      }
                     }
-                  }
-                },
-                [
-                  _vm._v(
-                    "\n                        " +
-                      _vm._s(_vm._f("capitalize")(key)) +
-                      "\n                        "
-                  ),
-                  _c("span", {
-                    staticClass: "arrow",
-                    class: _vm.sortOrders[key] > 0 ? "asc" : "dsc"
-                  })
-                ]
+                  },
+                  [
+                    _vm._v(
+                      "\n                        " +
+                        _vm._s(_vm._f("capitalize")(key)) +
+                        "\n                        "
+                    ),
+                    _c("span", {
+                      staticClass: "arrow",
+                      class: _vm.sortOrders[key] > 0 ? "asc" : "dsc"
+                    })
+                  ]
+                )
+              })
+            )
+          ]),
+          _vm._v(" "),
+          _c(
+            "tbody",
+            _vm._l(_vm.filteredData, function(entry) {
+              return _c(
+                "tr",
+                _vm._l(_vm.columns, function(key) {
+                  return _c(
+                    "td",
+                    {
+                      directives: [
+                        {
+                          name: "show",
+                          rawName: "v-show",
+                          value: !_vm.hidden.includes(key),
+                          expression: "! hidden.includes(key)"
+                        }
+                      ]
+                    },
+                    [
+                      _vm._v(
+                        "\n                        " +
+                          _vm._s(entry[key]) +
+                          "\n                    "
+                      )
+                    ]
+                  )
+                })
               )
             })
           )
-        ]),
-        _vm._v(" "),
-        _c(
-          "tbody",
-          _vm._l(_vm.filteredData, function(entry) {
-            return _c(
-              "tr",
-              _vm._l(_vm.columns, function(key) {
-                return _c("td", [
-                  _vm._v(
-                    "\n                        " +
-                      _vm._s(entry[key]) +
-                      "\n                    "
-                  )
-                ])
-              })
-            )
-          })
-        )
-      ])
+        ],
+        2
+      )
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "row" }, [
-      !_vm.noLiSurround
-        ? _c(
-            "ul",
-            { staticClass: "paginator" },
-            [
-              _c(
-                "li",
-                {
-                  class: [_vm.prevClass, { disabled: _vm.firstPageSelected() }]
-                },
-                [
-                  _c(
-                    "a",
-                    {
-                      class: _vm.prevLinkClass,
-                      attrs: { tabindex: "0" },
-                      on: {
-                        click: function($event) {
-                          _vm.prevPage()
-                        },
-                        keyup: function($event) {
-                          if (
-                            !("button" in $event) &&
-                            _vm._k($event.keyCode, "enter", 13)
-                          ) {
-                            return null
-                          }
-                          _vm.prevPage()
-                        }
-                      }
-                    },
-                    [_vm._t("prevContent", [_vm._v(_vm._s(_vm.prevText))])],
-                    2
-                  )
-                ]
-              ),
-              _vm._v(" "),
-              _vm._l(_vm.pages, function(page) {
-                return _c(
-                  "li",
+      _c("div", { staticClass: "col-md-2" }, [
+        _vm._v(
+          "\n            Page " +
+            _vm._s(_vm.selected) +
+            " of " +
+            _vm._s(_vm.total) +
+            "\n        "
+        )
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-md-6 col-md-offset-1" }, [
+        _c(
+          "ul",
+          { staticClass: "paginator" },
+          [
+            _c(
+              "li",
+              { class: [_vm.prevClass, { disabled: _vm.firstPageSelected() }] },
+              [
+                _c(
+                  "a",
                   {
-                    class: [
-                      _vm.pageClass,
-                      page.selected ? _vm.activeClass : "",
-                      { disabled: page.disabled }
-                    ]
-                  },
-                  [
-                    page.disabled
-                      ? _c(
-                          "a",
-                          {
-                            class: _vm.pageLinkClass,
-                            attrs: { tabindex: "0" }
-                          },
-                          [_vm._v(_vm._s(page.content))]
-                        )
-                      : _c(
-                          "a",
-                          {
-                            class: _vm.pageLinkClass,
-                            attrs: { tabindex: "0" },
-                            on: {
-                              click: function($event) {
-                                _vm.handlePageSelected(page.index)
-                              },
-                              keyup: function($event) {
-                                if (
-                                  !("button" in $event) &&
-                                  _vm._k($event.keyCode, "enter", 13)
-                                ) {
-                                  return null
-                                }
-                                _vm.handlePageSelected(page.index)
-                              }
-                            }
-                          },
-                          [_vm._v(_vm._s(page.content))]
-                        )
-                  ]
-                )
-              }),
-              _vm._v(" "),
-              _c(
-                "li",
-                {
-                  class: [_vm.nextClass, { disabled: _vm.lastPageSelected() }]
-                },
-                [
-                  _c(
-                    "a",
-                    {
-                      class: _vm.nextLinkClass,
-                      attrs: { tabindex: "0" },
-                      on: {
-                        click: function($event) {
-                          _vm.nextPage()
-                        },
-                        keyup: function($event) {
-                          if (
-                            !("button" in $event) &&
-                            _vm._k($event.keyCode, "enter", 13)
-                          ) {
-                            return null
-                          }
-                          _vm.nextPage()
+                    class: _vm.prevLinkClass,
+                    attrs: { tabindex: "0" },
+                    on: {
+                      click: function($event) {
+                        _vm.prevPage()
+                      },
+                      keyup: function($event) {
+                        if (
+                          !("button" in $event) &&
+                          _vm._k($event.keyCode, "enter", 13)
+                        ) {
+                          return null
                         }
+                        _vm.prevPage()
                       }
-                    },
-                    [_vm._t("nextContent", [_vm._v(_vm._s(_vm.nextText))])],
-                    2
-                  )
-                ]
-              )
-            ],
-            2
-          )
-        : _c(
-            "div",
-            { class: _vm.containerClass },
-            [
-              _c(
-                "a",
+                    }
+                  },
+                  [_vm._t("prevContent", [_vm._v(_vm._s(_vm.prevText))])],
+                  2
+                )
+              ]
+            ),
+            _vm._v(" "),
+            _vm._l(_vm.pages, function(page) {
+              return _c(
+                "li",
                 {
                   class: [
-                    _vm.prevLinkClass,
-                    { disabled: _vm.firstPageSelected() }
-                  ],
-                  attrs: { tabindex: "0" },
-                  on: {
-                    click: function($event) {
-                      _vm.prevPage()
-                    },
-                    keyup: function($event) {
-                      if (
-                        !("button" in $event) &&
-                        _vm._k($event.keyCode, "enter", 13)
-                      ) {
-                        return null
-                      }
-                      _vm.prevPage()
-                    }
-                  }
+                    _vm.pageClass,
+                    page.selected ? _vm.activeClass : "",
+                    { disabled: page.disabled }
+                  ]
                 },
-                [_vm._t("prevContent", [_vm._v(_vm._s(_vm.prevText))])],
-                2
-              ),
-              _vm._v(" "),
-              _vm._l(_vm.pages, function(page) {
-                return [
+                [
                   page.disabled
                     ? _c(
                         "a",
-                        {
-                          class: [
-                            _vm.pageLinkClass,
-                            page.selected ? _vm.activeClass : "",
-                            { disabled: page.disabled }
-                          ],
-                          attrs: { tabindex: "0" }
-                        },
+                        { class: _vm.pageLinkClass, attrs: { tabindex: "0" } },
                         [_vm._v(_vm._s(page.content))]
                       )
                     : _c(
                         "a",
                         {
-                          class: [
-                            _vm.pageLinkClass,
-                            { active: page.selected, disabled: page.disabled }
-                          ],
+                          class: _vm.pageLinkClass,
                           attrs: { tabindex: "0" },
                           on: {
                             click: function($event) {
-                              _vm.handlePageSelected(page.index)
+                              _vm.selectPageHandler(page.content)
                             },
                             keyup: function($event) {
                               if (
@@ -32318,50 +32267,49 @@ var render = function() {
                               ) {
                                 return null
                               }
-                              _vm.handlePageSelected(page.index)
+                              _vm.handlePageSelected(page.content)
                             }
                           }
                         },
-                        [
-                          _vm._v(
-                            "\n                    " +
-                              _vm._s(page.content) +
-                              "\n                    "
-                          )
-                        ]
+                        [_vm._v(_vm._s(page.content))]
                       )
                 ]
-              }),
-              _vm._v(" "),
-              _c(
-                "a",
-                {
-                  class: [
-                    _vm.nextLinkClass,
-                    { disabled: _vm.lastPageSelected() }
-                  ],
-                  attrs: { tabindex: "0" },
-                  on: {
-                    click: function($event) {
-                      _vm.nextPage()
-                    },
-                    keyup: function($event) {
-                      if (
-                        !("button" in $event) &&
-                        _vm._k($event.keyCode, "enter", 13)
-                      ) {
-                        return null
-                      }
-                      _vm.nextPage()
-                    }
-                  }
-                },
-                [_vm._t("nextContent", [_vm._v(_vm._s(_vm.nextText))])],
-                2
               )
-            ],
-            2
-          )
+            }),
+            _vm._v(" "),
+            _c(
+              "li",
+              { class: [_vm.nextClass, { disabled: _vm.lastPageSelected() }] },
+              [
+                _c(
+                  "a",
+                  {
+                    class: _vm.nextLinkClass,
+                    attrs: { tabindex: "0" },
+                    on: {
+                      click: function($event) {
+                        _vm.nextPage()
+                      },
+                      keyup: function($event) {
+                        if (
+                          !("button" in $event) &&
+                          _vm._k($event.keyCode, "enter", 13)
+                        ) {
+                          return null
+                        }
+                        _vm.nextPage()
+                      }
+                    }
+                  },
+                  [_vm._t("nextContent", [_vm._v(_vm._s(_vm.nextText))])],
+                  2
+                )
+              ]
+            )
+          ],
+          2
+        )
+      ])
     ])
   ])
 }

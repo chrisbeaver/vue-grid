@@ -19,16 +19,25 @@ Route::post('/', function(Illuminate\Http\Request $request) {
     $payload = collect();
     if(isset($request->filter))
     {
-        $query = App\Content::where('name', 'LIKE', '%'.$request->filter.'%');
+        $columns = $request->filterable;
+        $col = array_shift($columns);
+        $query = App\Content::where($col, 'LIKE', '%'. $request->filter .'%');
+        foreach($columns as $col)
+        {
+            $query = $query->orWhere($col, 'LIKE', '%'. $request->filter .'%');
+        }
         $total = $query->count();
-        $results = $query->orderBy($request->orderBy, 'ASC')
+        $results = $query->orderBy($request->orderBy)
+                         ->offset($request->offset * $request->limit)
                          ->limit((int)$request->limit)
                          ->get();   
     }
     else
     {
         $total = App\Content::count();
-        $results = App\Content::take($request->limit)->get();
+        $results = App\Content::orderBy($request->orderBy)
+                              ->offset($request->offset * $request->limit)
+                              ->take($request->limit)->get();
     }
     $payload->put('results', $results);
     $payload->put('total', $total);

@@ -63,6 +63,7 @@
                 margin-bottom: 30px;
             }
         </style>
+        <link rel="stylesheet" href="{{ elixir('css/app.css') }}" />
     </head>
     <body>
         <div class="flex-center position-ref full-height">
@@ -81,7 +82,7 @@
                 <div class="title m-b-md">
                     Vue Grid
                 </div>  
-                <crypto-grid :columns="gridColumns" :end-point="endPoint" :limit="limit" :order-by="orderBy">
+                <crypto-grid :columns="gridColumns" :hidden="hidden" :filterable="filterable" :widths="widths" :end-point="endPoint" :limit="limit" :order-by="orderBy">
                 </crypto-grid>
             </div>
         </div>
@@ -90,10 +91,13 @@
             var grid = new Vue({
                 el: '#app',
                 data: {
-                    gridColumns: ['name', 'start_date', 'end_date', 'size', 'weight'],
+                    gridColumns: ['id', 'name', 'start_date', 'end_date', 'size', 'weight'],
+                    filterable: ['name', 'start_date', 'end_date', 'size', 'weight'],
+                    widths: [300, 220, 220, 200, 200],
+                    hidden: ['id'],
                     endPoint: "http://local.vuegrid.com:8000/",
                     limit: 10,
-                    orderBy: "name"
+                    orderBy: "id"
                 }
             })
         </script>

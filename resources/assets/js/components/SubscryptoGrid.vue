@@ -7,11 +7,13 @@
         </div>
         <div class="row">
             <table>
+                <col v-for="w in widths" :width="w" />
                 <thead>
                     <tr>
                         <th v-for="key in columns"
                             @click="sortBy(key)"
-                            :class="{ active: sortKey == key }">
+                            :class="{ active: sortKey == key }"
+                            v-show='! hidden.includes(key)'>
                             {{ key | capitalize }}
                             <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
                             </span>
@@ -20,7 +22,7 @@
                 </thead>
                 <tbody>
                     <tr v-for="entry in filteredData">
-                        <td v-for="key in columns">
+                        <td v-for="key in columns" v-show='! hidden.includes(key)'>
                             {{entry[key]}}
                         </td>
                     </tr>
@@ -28,28 +30,22 @@
             </table>
         </div>
         <div class="row">
-            <ul class="paginator" v-if="!noLiSurround">
-                <li :class="[prevClass, { disabled: firstPageSelected() }]">
-                    <a @click="prevPage()" @keyup.enter="prevPage()" :class="prevLinkClass" tabindex="0"><slot name="prevContent">{{ prevText }}</slot></a>
-                </li>
-                <li v-for="page in pages" :class="[pageClass, page.selected ? activeClass : '', { disabled: page.disabled } ]">
-                    <a v-if="page.disabled" :class="pageLinkClass" tabindex="0">{{ page.content }}</a>
-                    <a v-else @click="handlePageSelected(page.index)" @keyup.enter="handlePageSelected(page.index)" :class="pageLinkClass" tabindex="0">{{ page.content }}</a>
-                </li>
-                <li :class="[nextClass, { disabled: lastPageSelected() }]">
-                    <a @click="nextPage()" @keyup.enter="nextPage()" :class="nextLinkClass" tabindex="0"><slot name="nextContent">{{ nextText }}</slot></a>
-                </li>
-            </ul>
-
-            <div :class="containerClass" v-else>
-                <a @click="prevPage()" @keyup.enter="prevPage()" :class="[prevLinkClass, { disabled: firstPageSelected() }]" tabindex="0"><slot name="prevContent">{{ prevText }}</slot></a>
-                    <template v-for="page in pages">
-                        <a v-if="page.disabled" :class="[pageLinkClass, page.selected ? activeClass : '', { disabled: page.disabled }]" tabindex="0">{{ page.content }}</a>
-                        <a v-else @click="handlePageSelected(page.index)" @keyup.enter="handlePageSelected(page.index)" :class="[pageLinkClass, { active: page.selected, disabled: page.disabled }]" tabindex="0">
-                        {{ page.content }}
-                        </a>
-                    </template>
-                <a @click="nextPage()" @keyup.enter="nextPage()" :class="[nextLinkClass, { disabled: lastPageSelected() }]" tabindex="0"><slot name="nextContent">{{ nextText }}</slot></a>
+            <div class="col-md-2">
+                Page {{ selected }} of {{ total }}
+            </div>
+            <div class="col-md-6 col-md-offset-1">
+                <ul class="paginator">
+                    <li :class="[prevClass, { disabled: firstPageSelected() }]">
+                        <a @click="prevPage()" @keyup.enter="prevPage()" :class="prevLinkClass" tabindex="0"><slot name="prevContent">{{ prevText }}</slot></a>
+                    </li>
+                    <li v-for="page in pages" :class="[pageClass, page.selected ? activeClass : '', { disabled: page.disabled } ]">
+                        <a v-if="page.disabled" :class="pageLinkClass" tabindex="0">{{ page.content }}</a>
+                        <a v-else @click="selectPageHandler(page.content)" @keyup.enter="handlePageSelected(page.content)" :class="pageLinkClass" tabindex="0">{{ page.content }}</a>
+                    </li>
+                    <li :class="[nextClass, { disabled: lastPageSelected() }]">
+                        <a @click="nextPage()" @keyup.enter="nextPage()" :class="nextLinkClass" tabindex="0"><slot name="nextContent">{{ nextText }}</slot></a>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
@@ -58,14 +54,17 @@
 module.exports = {
     props: {
         columns: Array,
+        widths: Array,
+        hidden: Array,
+        filterable: Array,
         filterKey: String,
         endPoint: String,
         limit: Number,
-        orderBy: String,
         pageRange: {
             type: Number,
             default: 3
         },
+        orderBy: String,
         marginPage: {
             type: Number,
             default: 1
@@ -94,7 +93,7 @@ module.exports = {
             searchQuery: '',
             sortOrders: sortOrders,
             data: [],
-            selected: this.initialPage
+            selected: 1
         }
     },
     computed: {
@@ -196,12 +195,35 @@ module.exports = {
         sortBy: function (key) {
             this.sortKey = key
             this.sortOrders[key] = this.sortOrders[key] * -1
+            this.orderBy = key
+            this.filterHandler()
+        },
+        selectPageHandler: function(selected) {
+            this.selected = selected
+
+            axios.post(this.endPoint, { filter: this.searchQuery, 
+                                        filterable: this.filterable,
+                                        limit: this.limit,
+                                        orderBy: this.orderBy,
+                                        sortOrder: this.sortOrders[this.orderBy],
+                                        offset: selected - 1
+            })
+            .then(response => {
+                this.data = response.data.results
+                this.total = response.data.total
+            })
+            .catch(e => {
+                this.errors.push(e)
+            }) 
         },
         filterHandler: function(event) {
-            console.log(event)
+            this.selected = 1
+            console.log(this.columns)
             axios.post(this.endPoint, { filter: this.searchQuery, 
+                                        filterable: this.filterable,
                                         limit: this.limit,
-                                        orderBy: this.orderBy })
+                                        orderBy: this.orderBy
+            })
             .then(response => {
                 this.data = response.data.results
                 this.total = response.data.total
@@ -213,17 +235,18 @@ module.exports = {
         handlePageSelected(selected) {
             if (this.selected === selected) return
             this.selected = selected
-            this.clickHandler(this.selected + 1)
+            // this.clickHandler(this.selected)
+            this.filterHandler()
         },
         prevPage() {
             if (this.selected <= 0) return
             this.selected--
-            this.clickHandler(this.selected + 1)
+            this.selectPageHandler(this.selected)
         },
         nextPage() {
             if (this.selected >= this.pageCount - 1) return
             this.selected++
-            this.clickHandler(this.selected + 1)
+            this.selectPageHandler(this.selected)
         },
         firstPageSelected() {
             return this.selected === 0
@@ -234,7 +257,8 @@ module.exports = {
     },
     created: function(){
 
-        axios.post(this.endPoint, { limit: this.limit })
+        axios.post(this.endPoint, { limit: this.limit,
+                                    orderBy: this.orderBy })
         .then(response => {
             this.data = response.data.results
             this.total = response.data.total
@@ -252,24 +276,36 @@ body {
   color: #444;
 }
 
+a {
+  cursor: pointer;
+}
+
 table {
-  border: 2px solid #42b983;
+  /*border: 2px solid #42b983;*/
+  border: 2px solid #99c1bf;
   border-radius: 3px;
   background-color: #fff;
+  table-layout: fixed;
+  border-spacing: unset;
 }
 
 th {
-  background-color: #42b983;
-  color: rgba(255,255,255,0.66);
+  /*background-color: #42b983;*/
+  background-color: #99c1bf;
+  color: #fff;
   cursor: pointer;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  text-align: center;
 }
 
-td {
+/*td {
   background-color: #f9f9f9;
+}*/
+tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
 }
 
 th, td {
@@ -283,6 +319,12 @@ th.active {
 
 th.active .arrow {
   opacity: 1;
+}
+
+li {
+    display: inline-block;
+    margin: 4px;
+    zoom: 1;
 }
 
 .arrow {

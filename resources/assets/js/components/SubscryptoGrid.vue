@@ -31,7 +31,7 @@
         </div>
         <div class="row">
             <div class="col-md-2">
-                Page {{ selected }} of {{ total }}
+                Page {{ selected }} of {{ this.totalPages() }}
             </div>
             <div class="col-md-6 col-md-offset-1">
                 <ul class="paginator">
@@ -198,6 +198,12 @@ module.exports = {
             this.orderBy = key
             this.filterHandler()
         },
+        totalPages: function() {
+            let pages = Math.floor(this.total / this.limit);
+            if(this.total % this.limit)
+                pages++;
+            return pages;
+        },
         selectPageHandler: function(selected) {
             this.selected = selected
 
@@ -276,6 +282,9 @@ body {
   color: #444;
 }
 
+.paginator {
+    font-size: 1.5em;
+}
 a {
   cursor: pointer;
 }

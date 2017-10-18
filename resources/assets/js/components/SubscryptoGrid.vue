@@ -62,7 +62,6 @@ module.exports = {
             type: Number,
             default: 3
         },
-        orderBy: String,
         marginPage: {
             type: Number,
             default: 1
@@ -91,7 +90,8 @@ module.exports = {
             searchQuery: '',
             sortOrders: sortOrders,
             data: [],
-            selected: 1
+            selected: 1,
+            orderBy: 'id'
         }
     },
     computed: {
@@ -202,7 +202,7 @@ module.exports = {
             this.sortKey = key
             this.sortOrders[key] = this.sortOrders[key] * -1
             this.orderBy = key
-            this.filterHandler()
+            this.filterHandler(this.selected)
         },
         totalPages: function() {
             let pages = Math.floor(this.total / this.limit);
@@ -235,7 +235,7 @@ module.exports = {
             if (this.selected === selected) return
             this.selected = selected
             // this.clickHandler(this.selected)
-            this.filterHandler()
+            this.filterHandler(this.selected)
         },
         prevPage() {
             if (this.selected <= 0) return

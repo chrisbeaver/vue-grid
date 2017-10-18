@@ -82,7 +82,7 @@
                 <div class="title m-b-md">
                     Vue Grid
                 </div>  
-                <crypto-grid :columns="gridColumns" :hidden="hidden" :filterable="filterable" :widths="widths" :end-point="endPoint" :limit="limit" :order-by="orderBy">
+                <crypto-grid :columns="gridColumns" :hidden="hidden" :filterable="filterable" :widths="widths" :end-point="endPoint" :limit="limit">
                 </crypto-grid>
             </div>
         </div>
@@ -97,7 +97,6 @@
                     hidden: ['id'],
                     endPoint: "http://local.vuegrid.com:8000/",
                     limit: 10,
-                    orderBy: "id"
                 }
             })
         </script>

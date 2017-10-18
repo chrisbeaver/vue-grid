@@ -17,7 +17,6 @@
                 color: #636b6f;
                 font-family: 'Raleway', sans-serif;
                 font-weight: 100;
-                height: 100vh;
                 margin: 0;
             }
 
@@ -66,7 +65,7 @@
         <link rel="stylesheet" href="{{ elixir('css/app.css') }}" />
     </head>
     <body>
-        <div class="flex-center position-ref full-height">
+        <div class="flex-center position-ref">
             @if (Route::has('login'))
                 <div class="top-right links">
                     @auth
@@ -93,7 +92,7 @@
                 data: {
                     gridColumns: ['id', 'name', 'start_date', 'end_date', 'size', 'weight'],
                     filterable: ['name', 'start_date', 'end_date', 'size', 'weight'],
-                    widths: [300, 220, 220, 200, 200],
+                    widths: ["30%", "20%", "20%", "15%", "15%"],
                     hidden: ['id'],
                     endPoint: "http://local.vuegrid.com:8000/",
                     limit: 10,

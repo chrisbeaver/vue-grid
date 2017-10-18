@@ -1,37 +1,41 @@
 <template>
     <div class="container">
         <div class="row">
-            <form id="search">
-                Search <input name="query" v-model="searchQuery" v-on:keyup="queryHandler">
-            </form>
+            <div class="col-md-offset-9 col-md-3" style="margin-bottom: 1em;">
+                <form id="search">
+                    Search <input name="query" v-model="searchQuery" v-on:keyup="queryHandler">
+                </form>
+            </div>
         </div>
         <div class="row">
-            <table>
-                <col v-for="w in widths" :width="w" />
-                <thead>
-                    <tr>
-                        <th v-for="key in columns"
-                            @click="sortBy(key)"
-                            :class="{ active: sortKey == key }"
-                            v-show='! hidden.includes(key)'>
-                            {{ key | capitalize }}
-                            <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
-                            </span>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="entry in filteredData">
-                        <td v-for="key in columns" v-show='! hidden.includes(key)'>{{entry[key]}}</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="col-md-12">
+                <table>
+                    <col v-for="w in widths" :width="w" />
+                    <thead>
+                        <tr>
+                            <th v-for="key in columns"
+                                @click="sortBy(key)"
+                                :class="{ active: sortKey == key }"
+                                v-show='! hidden.includes(key)'>
+                                {{ key | capitalize }}
+                                <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+                                </span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="entry in filteredData">
+                            <td v-for="key in columns" v-show='! hidden.includes(key)'>{{entry[key]}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
         <div class="row">
             <div class="col-md-2">
                 Page {{ selected }} of {{ this.totalPages() }}
             </div>
-            <div class="col-md-6 col-md-offset-1">
+            <div class="col-md-6 col-md-offset-3">
                 <ul class="paginator">
                     <li :class="[prevClass, { disabled: firstPageSelected() }]">
                         <a @click="prevPage()" @keyup.enter="prevPage()" :class="prevLinkClass" tabindex="0"><slot name="prevContent">{{ prevText }}</slot></a>
@@ -189,6 +193,7 @@ module.exports = {
                     setBreakView(selectedRangeHigh + 1)
                 }
             }
+            console.log(items)
             return items;
         }
     },
@@ -290,6 +295,7 @@ table {
   table-layout: fixed;
   border-spacing: unset;
   empty-cells: show;
+  width: 100%;
 }
 
 th {

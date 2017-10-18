@@ -1698,6 +1698,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
 
 module.exports = {
     props: {
@@ -1836,6 +1840,7 @@ module.exports = {
                     setBreakView(selectedRangeHigh + 1);
                 }
             }
+            console.log(items);
             return items;
         }
     },
@@ -4307,7 +4312,7 @@ exports = module.exports = __webpack_require__("./node_modules/css-loader/lib/cs
 
 
 // module
-exports.push([module.i, "\nbody[data-v-1616a38e] {\n  font-family: Helvetica Neue, Arial, sans-serif;\n  font-size: 14px;\n  color: #444;\n}\n.paginator[data-v-1616a38e] {\n    font-size: 1.5em;\n}\na[data-v-1616a38e] {\n  cursor: pointer;\n}\ntable[data-v-1616a38e] {\n  /*border: 2px solid #42b983;*/\n  border: 2px solid #99c1bf;\n  border-radius: 3px;\n  background-color: #fff;\n  table-layout: fixed;\n  border-spacing: unset;\n  empty-cells: show;\n}\nth[data-v-1616a38e] {\n  /*background-color: #42b983;*/\n  background-color: #99c1bf;\n  color: #fff;\n  cursor: pointer;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n  text-align: center;\n}\n\n/*td {\n  background-color: #f9f9f9;\n}*/\ntbody tr[data-v-1616a38e]:nth-child(odd) {\n    background-color: #f9f9f9;\n}\nth[data-v-1616a38e], td[data-v-1616a38e] {\n  min-width: 120px;\n  padding: 10px 20px;\n}\nth.active[data-v-1616a38e] {\n  color: #fff;\n}\nth.active .arrow[data-v-1616a38e] {\n  opacity: 1;\n}\ntd[data-v-1616a38e]:empty {\n  height: 2.75em;\n}\nli[data-v-1616a38e] {\n    display: inline-block;\n    margin: 4px;\n    zoom: 1;\n}\n.arrow[data-v-1616a38e] {\n  display: inline-block;\n  vertical-align: middle;\n  width: 0;\n  height: 0;\n  margin-left: 5px;\n  opacity: 0.66;\n}\n.arrow.asc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-bottom: 4px solid #fff;\n}\n.arrow.dsc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-top: 4px solid #fff;\n}\n", ""]);
+exports.push([module.i, "\nbody[data-v-1616a38e] {\n  font-family: Helvetica Neue, Arial, sans-serif;\n  font-size: 14px;\n  color: #444;\n}\n.paginator[data-v-1616a38e] {\n    font-size: 1.5em;\n}\na[data-v-1616a38e] {\n  cursor: pointer;\n}\ntable[data-v-1616a38e] {\n  /*border: 2px solid #42b983;*/\n  border: 2px solid #99c1bf;\n  border-radius: 3px;\n  background-color: #fff;\n  table-layout: fixed;\n  border-spacing: unset;\n  empty-cells: show;\n  width: 100%;\n}\nth[data-v-1616a38e] {\n  /*background-color: #42b983;*/\n  background-color: #99c1bf;\n  color: #fff;\n  cursor: pointer;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n  text-align: center;\n}\n\n/*td {\n  background-color: #f9f9f9;\n}*/\ntbody tr[data-v-1616a38e]:nth-child(odd) {\n    background-color: #f9f9f9;\n}\nth[data-v-1616a38e], td[data-v-1616a38e] {\n  min-width: 120px;\n  padding: 10px 20px;\n}\nth.active[data-v-1616a38e] {\n  color: #fff;\n}\nth.active .arrow[data-v-1616a38e] {\n  opacity: 1;\n}\ntd[data-v-1616a38e]:empty {\n  height: 2.75em;\n}\nli[data-v-1616a38e] {\n    display: inline-block;\n    margin: 4px;\n    zoom: 1;\n}\n.arrow[data-v-1616a38e] {\n  display: inline-block;\n  vertical-align: middle;\n  width: 0;\n  height: 0;\n  margin-left: 5px;\n  opacity: 0.66;\n}\n.arrow.asc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-bottom: 4px solid #fff;\n}\n.arrow.dsc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-top: 4px solid #fff;\n}\n", ""]);
 
 // exports
 
@@ -32077,86 +32082,56 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "container" }, [
     _c("div", { staticClass: "row" }, [
-      _c("form", { attrs: { id: "search" } }, [
-        _vm._v("\n            Search "),
-        _c("input", {
-          directives: [
-            {
-              name: "model",
-              rawName: "v-model",
-              value: _vm.searchQuery,
-              expression: "searchQuery"
-            }
-          ],
-          attrs: { name: "query" },
-          domProps: { value: _vm.searchQuery },
-          on: {
-            keyup: _vm.queryHandler,
-            input: function($event) {
-              if ($event.target.composing) {
-                return
+      _c(
+        "div",
+        {
+          staticClass: "col-md-offset-9 col-md-3",
+          staticStyle: { "margin-bottom": "1em" }
+        },
+        [
+          _c("form", { attrs: { id: "search" } }, [
+            _vm._v("\n                Search "),
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.searchQuery,
+                  expression: "searchQuery"
+                }
+              ],
+              attrs: { name: "query" },
+              domProps: { value: _vm.searchQuery },
+              on: {
+                keyup: _vm.queryHandler,
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.searchQuery = $event.target.value
+                }
               }
-              _vm.searchQuery = $event.target.value
-            }
-          }
-        })
-      ])
+            })
+          ])
+        ]
+      )
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "row" }, [
-      _c(
-        "table",
-        [
-          _vm._l(_vm.widths, function(w) {
-            return _c("col", { attrs: { width: w } })
-          }),
-          _vm._v(" "),
-          _c("thead", [
-            _c(
-              "tr",
-              _vm._l(_vm.columns, function(key) {
-                return _c(
-                  "th",
-                  {
-                    directives: [
-                      {
-                        name: "show",
-                        rawName: "v-show",
-                        value: !_vm.hidden.includes(key),
-                        expression: "! hidden.includes(key)"
-                      }
-                    ],
-                    class: { active: _vm.sortKey == key },
-                    on: {
-                      click: function($event) {
-                        _vm.sortBy(key)
-                      }
-                    }
-                  },
-                  [
-                    _vm._v(
-                      "\n                        " +
-                        _vm._s(_vm._f("capitalize")(key)) +
-                        "\n                        "
-                    ),
-                    _c("span", {
-                      staticClass: "arrow",
-                      class: _vm.sortOrders[key] > 0 ? "asc" : "dsc"
-                    })
-                  ]
-                )
-              })
-            )
-          ]),
-          _vm._v(" "),
-          _c(
-            "tbody",
-            _vm._l(_vm.filteredData, function(entry) {
-              return _c(
+      _c("div", { staticClass: "col-md-12" }, [
+        _c(
+          "table",
+          [
+            _vm._l(_vm.widths, function(w) {
+              return _c("col", { attrs: { width: w } })
+            }),
+            _vm._v(" "),
+            _c("thead", [
+              _c(
                 "tr",
                 _vm._l(_vm.columns, function(key) {
                   return _c(
-                    "td",
+                    "th",
                     {
                       directives: [
                         {
@@ -32165,17 +32140,58 @@ var render = function() {
                           value: !_vm.hidden.includes(key),
                           expression: "! hidden.includes(key)"
                         }
-                      ]
+                      ],
+                      class: { active: _vm.sortKey == key },
+                      on: {
+                        click: function($event) {
+                          _vm.sortBy(key)
+                        }
+                      }
                     },
-                    [_vm._v(_vm._s(entry[key]))]
+                    [
+                      _vm._v(
+                        "\n                            " +
+                          _vm._s(_vm._f("capitalize")(key)) +
+                          "\n                            "
+                      ),
+                      _c("span", {
+                        staticClass: "arrow",
+                        class: _vm.sortOrders[key] > 0 ? "asc" : "dsc"
+                      })
+                    ]
                   )
                 })
               )
-            })
-          )
-        ],
-        2
-      )
+            ]),
+            _vm._v(" "),
+            _c(
+              "tbody",
+              _vm._l(_vm.filteredData, function(entry) {
+                return _c(
+                  "tr",
+                  _vm._l(_vm.columns, function(key) {
+                    return _c(
+                      "td",
+                      {
+                        directives: [
+                          {
+                            name: "show",
+                            rawName: "v-show",
+                            value: !_vm.hidden.includes(key),
+                            expression: "! hidden.includes(key)"
+                          }
+                        ]
+                      },
+                      [_vm._v(_vm._s(entry[key]))]
+                    )
+                  })
+                )
+              })
+            )
+          ],
+          2
+        )
+      ])
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "row" }, [
@@ -32189,7 +32205,7 @@ var render = function() {
         )
       ]),
       _vm._v(" "),
-      _c("div", { staticClass: "col-md-6 col-md-offset-1" }, [
+      _c("div", { staticClass: "col-md-6 col-md-offset-3" }, [
         _c(
           "ul",
           { staticClass: "paginator" },

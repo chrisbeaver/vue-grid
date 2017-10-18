@@ -2,7 +2,7 @@
     <div class="container">
         <div class="row">
             <form id="search">
-                Search <input name="query" v-model="searchQuery" v-on:keyup="filterHandler">
+                Search <input name="query" v-model="searchQuery" v-on:keyup="queryHandler">
             </form>
         </div>
         <div class="row">
@@ -22,9 +22,7 @@
                 </thead>
                 <tbody>
                     <tr v-for="entry in filteredData">
-                        <td v-for="key in columns" v-show='! hidden.includes(key)'>
-                            {{entry[key]}}
-                        </td>
+                        <td v-for="key in columns" v-show='! hidden.includes(key)'>{{entry[key]}}</td>
                     </tr>
                 </tbody>
             </table>
@@ -40,7 +38,7 @@
                     </li>
                     <li v-for="page in pages" :class="[pageClass, page.selected ? activeClass : '', { disabled: page.disabled } ]">
                         <a v-if="page.disabled" :class="pageLinkClass" tabindex="0">{{ page.content }}</a>
-                        <a v-else @click="selectPageHandler(page.content)" @keyup.enter="handlePageSelected(page.content)" :class="pageLinkClass" tabindex="0">{{ page.content }}</a>
+                        <a v-else @click="filterHandler(page.content)" @keyup.enter="handlePageSelected(page.content)" :class="pageLinkClass" tabindex="0">{{ page.content }}</a>
                     </li>
                     <li :class="[nextClass, { disabled: lastPageSelected() }]">
                         <a @click="nextPage()" @keyup.enter="nextPage()" :class="nextLinkClass" tabindex="0"><slot name="nextContent">{{ nextText }}</slot></a>
@@ -102,7 +100,15 @@ module.exports = {
             var filterKey = this.searchQuery && this.searchQuery.toLowerCase()
             var order = this.sortOrders[sortKey] || 1
             var data = this.data
-
+            if(data.length < this.limit)
+            {
+                for(let i = data.length - 1; i < this.limit; i++)
+                {
+                    let spacer = {};
+                    // spacer[this.columns[1]] = "&nbsp;"
+                    data.push(spacer)
+                }
+            }
             // if (filterKey) {
             //     data = this.data
             // }
@@ -204,7 +210,7 @@ module.exports = {
                 pages++;
             return pages;
         },
-        selectPageHandler: function(selected) {
+        filterHandler: function(selected) {
             this.selected = selected
 
             axios.post(this.endPoint, { filter: this.searchQuery, 
@@ -222,21 +228,8 @@ module.exports = {
                 this.errors.push(e)
             }) 
         },
-        filterHandler: function(event) {
-            this.selected = 1
-            console.log(this.columns)
-            axios.post(this.endPoint, { filter: this.searchQuery, 
-                                        filterable: this.filterable,
-                                        limit: this.limit,
-                                        orderBy: this.orderBy
-            })
-            .then(response => {
-                this.data = response.data.results
-                this.total = response.data.total
-            })
-            .catch(e => {
-                this.errors.push(e)
-            }) 
+        queryHandler(event) {
+            this.filterHandler(1);
         },
         handlePageSelected(selected) {
             if (this.selected === selected) return
@@ -247,15 +240,15 @@ module.exports = {
         prevPage() {
             if (this.selected <= 0) return
             this.selected--
-            this.selectPageHandler(this.selected)
+            this.filterHandler(this.selected)
         },
         nextPage() {
             if (this.selected >= this.pageCount - 1) return
             this.selected++
-            this.selectPageHandler(this.selected)
+            this.filterHandler(this.selected)
         },
         firstPageSelected() {
-            return this.selected === 0
+            return this.selected === 1
         },
         lastPageSelected() {
             return (this.selected === this.pageCount - 1) || (this.pageCount === 0)
@@ -296,6 +289,7 @@ table {
   background-color: #fff;
   table-layout: fixed;
   border-spacing: unset;
+  empty-cells: show;
 }
 
 th {
@@ -328,6 +322,10 @@ th.active {
 
 th.active .arrow {
   opacity: 1;
+}
+
+td:empty {
+  height: 2.75em;
 }
 
 li {

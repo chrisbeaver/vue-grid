@@ -27,7 +27,7 @@ Route::post('/', function(Illuminate\Http\Request $request) {
             $query = $query->orWhere($col, 'LIKE', '%'. $request->filter .'%');
         }
         $total = $query->count();
-        $results = $query->orderBy($request->orderBy)
+        $results = $query->orderBy($request->orderBy, ($request->sortOrder == 1) ? 'ASC' : 'DESC')
                          ->offset($request->offset * $request->limit)
                          ->limit((int)$request->limit)
                          ->get();   
@@ -35,7 +35,7 @@ Route::post('/', function(Illuminate\Http\Request $request) {
     else
     {
         $total = App\Content::count();
-        $results = App\Content::orderBy($request->orderBy)
+        $results = App\Content::orderBy($request->orderBy, ($request->sortOrder == 1) ? 'ASC' : 'DESC')
                               ->offset($request->offset * $request->limit)
                               ->take($request->limit)->get();
     }

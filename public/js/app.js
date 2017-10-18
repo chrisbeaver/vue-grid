@@ -1698,8 +1698,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
-//
-//
 
 module.exports = {
     props: {
@@ -1752,7 +1750,13 @@ module.exports = {
             var filterKey = this.searchQuery && this.searchQuery.toLowerCase();
             var order = this.sortOrders[sortKey] || 1;
             var data = this.data;
-
+            if (data.length < this.limit) {
+                for (var i = data.length - 1; i < this.limit; i++) {
+                    var spacer = {};
+                    // spacer[this.columns[1]] = "&nbsp;"
+                    data.push(spacer);
+                }
+            }
             // if (filterKey) {
             //     data = this.data
             // }
@@ -1852,7 +1856,7 @@ module.exports = {
             if (this.total % this.limit) pages++;
             return pages;
         },
-        selectPageHandler: function selectPageHandler(selected) {
+        filterHandler: function filterHandler(selected) {
             var _this2 = this;
 
             this.selected = selected;
@@ -1870,21 +1874,8 @@ module.exports = {
                 _this2.errors.push(e);
             });
         },
-        filterHandler: function filterHandler(event) {
-            var _this3 = this;
-
-            this.selected = 1;
-            console.log(this.columns);
-            axios.post(this.endPoint, { filter: this.searchQuery,
-                filterable: this.filterable,
-                limit: this.limit,
-                orderBy: this.orderBy
-            }).then(function (response) {
-                _this3.data = response.data.results;
-                _this3.total = response.data.total;
-            }).catch(function (e) {
-                _this3.errors.push(e);
-            });
+        queryHandler: function queryHandler(event) {
+            this.filterHandler(1);
         },
         handlePageSelected: function handlePageSelected(selected) {
             if (this.selected === selected) return;
@@ -1895,29 +1886,29 @@ module.exports = {
         prevPage: function prevPage() {
             if (this.selected <= 0) return;
             this.selected--;
-            this.selectPageHandler(this.selected);
+            this.filterHandler(this.selected);
         },
         nextPage: function nextPage() {
             if (this.selected >= this.pageCount - 1) return;
             this.selected++;
-            this.selectPageHandler(this.selected);
+            this.filterHandler(this.selected);
         },
         firstPageSelected: function firstPageSelected() {
-            return this.selected === 0;
+            return this.selected === 1;
         },
         lastPageSelected: function lastPageSelected() {
             return this.selected === this.pageCount - 1 || this.pageCount === 0;
         }
     },
     created: function created() {
-        var _this4 = this;
+        var _this3 = this;
 
         axios.post(this.endPoint, { limit: this.limit,
             orderBy: this.orderBy }).then(function (response) {
-            _this4.data = response.data.results;
-            _this4.total = response.data.total;
+            _this3.data = response.data.results;
+            _this3.total = response.data.total;
         }).catch(function (e) {
-            _this4.errors.push(e);
+            _this3.errors.push(e);
         });
     }
 };
@@ -4316,7 +4307,7 @@ exports = module.exports = __webpack_require__("./node_modules/css-loader/lib/cs
 
 
 // module
-exports.push([module.i, "\nbody[data-v-1616a38e] {\n  font-family: Helvetica Neue, Arial, sans-serif;\n  font-size: 14px;\n  color: #444;\n}\n.paginator[data-v-1616a38e] {\n    font-size: 1.5em;\n}\na[data-v-1616a38e] {\n  cursor: pointer;\n}\ntable[data-v-1616a38e] {\n  /*border: 2px solid #42b983;*/\n  border: 2px solid #99c1bf;\n  border-radius: 3px;\n  background-color: #fff;\n  table-layout: fixed;\n  border-spacing: unset;\n}\nth[data-v-1616a38e] {\n  /*background-color: #42b983;*/\n  background-color: #99c1bf;\n  color: #fff;\n  cursor: pointer;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n  text-align: center;\n}\n\n/*td {\n  background-color: #f9f9f9;\n}*/\ntbody tr[data-v-1616a38e]:nth-child(odd) {\n    background-color: #f9f9f9;\n}\nth[data-v-1616a38e], td[data-v-1616a38e] {\n  min-width: 120px;\n  padding: 10px 20px;\n}\nth.active[data-v-1616a38e] {\n  color: #fff;\n}\nth.active .arrow[data-v-1616a38e] {\n  opacity: 1;\n}\nli[data-v-1616a38e] {\n    display: inline-block;\n    margin: 4px;\n    zoom: 1;\n}\n.arrow[data-v-1616a38e] {\n  display: inline-block;\n  vertical-align: middle;\n  width: 0;\n  height: 0;\n  margin-left: 5px;\n  opacity: 0.66;\n}\n.arrow.asc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-bottom: 4px solid #fff;\n}\n.arrow.dsc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-top: 4px solid #fff;\n}\n", ""]);
+exports.push([module.i, "\nbody[data-v-1616a38e] {\n  font-family: Helvetica Neue, Arial, sans-serif;\n  font-size: 14px;\n  color: #444;\n}\n.paginator[data-v-1616a38e] {\n    font-size: 1.5em;\n}\na[data-v-1616a38e] {\n  cursor: pointer;\n}\ntable[data-v-1616a38e] {\n  /*border: 2px solid #42b983;*/\n  border: 2px solid #99c1bf;\n  border-radius: 3px;\n  background-color: #fff;\n  table-layout: fixed;\n  border-spacing: unset;\n  empty-cells: show;\n}\nth[data-v-1616a38e] {\n  /*background-color: #42b983;*/\n  background-color: #99c1bf;\n  color: #fff;\n  cursor: pointer;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n  text-align: center;\n}\n\n/*td {\n  background-color: #f9f9f9;\n}*/\ntbody tr[data-v-1616a38e]:nth-child(odd) {\n    background-color: #f9f9f9;\n}\nth[data-v-1616a38e], td[data-v-1616a38e] {\n  min-width: 120px;\n  padding: 10px 20px;\n}\nth.active[data-v-1616a38e] {\n  color: #fff;\n}\nth.active .arrow[data-v-1616a38e] {\n  opacity: 1;\n}\ntd[data-v-1616a38e]:empty {\n  height: 2.75em;\n}\nli[data-v-1616a38e] {\n    display: inline-block;\n    margin: 4px;\n    zoom: 1;\n}\n.arrow[data-v-1616a38e] {\n  display: inline-block;\n  vertical-align: middle;\n  width: 0;\n  height: 0;\n  margin-left: 5px;\n  opacity: 0.66;\n}\n.arrow.asc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-bottom: 4px solid #fff;\n}\n.arrow.dsc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-top: 4px solid #fff;\n}\n", ""]);
 
 // exports
 
@@ -32100,7 +32091,7 @@ var render = function() {
           attrs: { name: "query" },
           domProps: { value: _vm.searchQuery },
           on: {
-            keyup: _vm.filterHandler,
+            keyup: _vm.queryHandler,
             input: function($event) {
               if ($event.target.composing) {
                 return
@@ -32176,13 +32167,7 @@ var render = function() {
                         }
                       ]
                     },
-                    [
-                      _vm._v(
-                        "\n                        " +
-                          _vm._s(entry[key]) +
-                          "\n                    "
-                      )
-                    ]
+                    [_vm._v(_vm._s(entry[key]))]
                   )
                 })
               )
@@ -32263,7 +32248,7 @@ var render = function() {
                           attrs: { tabindex: "0" },
                           on: {
                             click: function($event) {
-                              _vm.selectPageHandler(page.content)
+                              _vm.filterHandler(page.content)
                             },
                             keyup: function($event) {
                               if (

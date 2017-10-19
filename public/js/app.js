@@ -1648,7 +1648,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /***/ "./node_modules/babel-loader/lib/index.js?{\"cacheDirectory\":true,\"presets\":[[\"env\",{\"modules\":false,\"targets\":{\"browsers\":[\"> 2%\"],\"uglify\":true}}]]}!./node_modules/vue-loader/lib/selector.js?type=script&index=0!./resources/assets/js/components/SubscryptoGrid.vue":
 /***/ (function(module, exports) {
 
-//
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 //
 //
 //
@@ -1712,6 +1713,7 @@ module.exports = {
         filterKey: String,
         endPoint: String,
         limit: Number,
+        pageList: Number,
         pageRange: {
             type: Number,
             default: 3
@@ -1726,11 +1728,11 @@ module.exports = {
         },
         prevText: {
             type: String,
-            default: 'Prev'
+            default: '<<'
         },
         nextText: {
             type: String,
-            default: 'Next'
+            default: '>>'
         }
     },
     data: function data() {
@@ -1749,6 +1751,18 @@ module.exports = {
         };
     },
     computed: {
+        firstPageSelected: function firstPageSelected() {
+            return this.selected === 1;
+        },
+        lastPageSelected: function lastPageSelected() {
+            return this.selected === this.pageCount - 1 || this.pageCount === 0;
+        },
+
+        totalPages: function totalPages() {
+            var pages = Math.floor(this.total / this.limit);
+            if (this.total % this.limit) pages++;
+            return pages;
+        },
         filteredData: function filteredData() {
             var sortKey = this.sortKey;
             var filterKey = this.searchQuery && this.searchQuery.toLowerCase();
@@ -1761,85 +1775,34 @@ module.exports = {
                     data.push(spacer);
                 }
             }
-            // if (filterKey) {
-            //     data = this.data
-            // }
-            // if (sortKey) {
-            //     data = data.slice().sort(function (a, b) {
-            //         a = a[sortKey]
-            //         b = b[sortKey]
-            //         return (a === b ? 0 : a > b ? 1 : -1) * order
-            //     })
-            // }
             return data;
         },
         pages: function pages() {
             var _this = this;
 
-            var items = {};
-            if (this.total <= this.pageRange) {
-                for (var index = 0; index < this.total; index++) {
-                    var page = {
-                        index: index,
-                        content: index + 1,
-                        selected: index === this.selected
-                    };
-                    items[index] = page;
-                }
+            if (this.selected < this.pageList) {
+                var p = [].concat(_toConsumableArray(Array(this.pageList + 1))).map(function (v, i) {
+                    return i;
+                }); //Array(this.pageList + 1);
+                p.shift();
+                console.log(p);
+                return p; // [...Array(this.pageList + 1).keys()];
             } else {
-                var leftPart = this.pageRange / 2;
-                var rightPart = this.pageRange - leftPart;
-                if (this.selected < leftPart) {
-                    leftPart = this.selected;
-                    rightPart = this.pageRange - leftPart;
-                } else if (this.selected > this.total - this.pageRange / 2) {
-                    rightPart = this.total - this.selected;
-                    leftPart = this.pageRange - rightPart;
-                }
-                var setPageItem = function setPageItem(index) {
-                    var page = {
-                        index: index,
-                        content: index + 1,
-                        selected: index === _this.selected
-                    };
-                    items[index] = page;
-                };
-                var setBreakView = function setBreakView(index) {
-                    var breakView = {
-                        content: '...',
-                        disabled: true
-                    };
-                    items[index] = breakView;
-                };
-                // 1st - loop thru low end of margin pages
-                for (var i = 0; i < this.marginPages; i++) {
-                    setPageItem(i);
-                }
-                // 2nd - loop thru high end of margin pages
-                for (var _i = this.total - 1; _i >= this.total - this.marginPages; _i--) {
-                    setPageItem(_i);
-                }
-                // 3rd - loop thru selected range
-                var selectedRangeLow = 0;
-                if (this.selected - this.pageRange > 0) {
-                    selectedRangeLow = this.selected - this.pageRange;
-                }
-                var selectedRangeHigh = this.total;
-                if (this.selected + this.pageRange < this.total) {
-                    selectedRangeHigh = this.selected + this.pageRange;
-                }
-                for (var _i2 = selectedRangeLow; _i2 <= selectedRangeHigh && _i2 <= this.total - 1; _i2++) {
-                    setPageItem(_i2);
-                }
-                // Check if there is breakView in the left of selected range
-                if (selectedRangeLow > this.marginPages) {
-                    setBreakView(selectedRangeLow - 1);
-                }
-                // Check if there is breakView in the right of selected range
-                if (selectedRangeHigh + 1 < this.total - this.marginPages) {
-                    setBreakView(selectedRangeHigh + 1);
-                }
+                var _p = [].concat(_toConsumableArray(Array(this.pageList + 1))).map(function (v, i) {
+                    return _this.selected - _this.pageList + i + 1;
+                });
+                _p.shift();
+                console.log(_p);
+                return _p;
             }
+            // let items = [];
+            // let selected = this.selected;
+            // let half = (this.pageList - 1) / 2; 
+
+            // for(let i = selected - half; i <= selected + half; i++)
+            // {
+            //     items.push(i);
+            // }
             console.log(items);
             return items;
         }
@@ -1855,11 +1818,6 @@ module.exports = {
             this.sortOrders[key] = this.sortOrders[key] * -1;
             this.orderBy = key;
             this.filterHandler(this.selected);
-        },
-        totalPages: function totalPages() {
-            var pages = Math.floor(this.total / this.limit);
-            if (this.total % this.limit) pages++;
-            return pages;
         },
         filterHandler: function filterHandler(selected) {
             var _this2 = this;
@@ -1897,12 +1855,6 @@ module.exports = {
             if (this.selected >= this.pageCount - 1) return;
             this.selected++;
             this.filterHandler(this.selected);
-        },
-        firstPageSelected: function firstPageSelected() {
-            return this.selected === 1;
-        },
-        lastPageSelected: function lastPageSelected() {
-            return this.selected === this.pageCount - 1 || this.pageCount === 0;
         }
     },
     created: function created() {
@@ -4312,7 +4264,7 @@ exports = module.exports = __webpack_require__("./node_modules/css-loader/lib/cs
 
 
 // module
-exports.push([module.i, "\nbody[data-v-1616a38e] {\n  font-family: Helvetica Neue, Arial, sans-serif;\n  font-size: 14px;\n  color: #444;\n}\n.paginator[data-v-1616a38e] {\n    font-size: 1.5em;\n}\na[data-v-1616a38e] {\n  cursor: pointer;\n}\ntable[data-v-1616a38e] {\n  /*border: 2px solid #42b983;*/\n  border: 2px solid #99c1bf;\n  border-radius: 3px;\n  background-color: #fff;\n  table-layout: fixed;\n  border-spacing: unset;\n  empty-cells: show;\n  width: 100%;\n}\nth[data-v-1616a38e] {\n  /*background-color: #42b983;*/\n  background-color: #99c1bf;\n  color: #fff;\n  cursor: pointer;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n  text-align: center;\n}\n\n/*td {\n  background-color: #f9f9f9;\n}*/\ntbody tr[data-v-1616a38e]:nth-child(odd) {\n    background-color: #f9f9f9;\n}\nth[data-v-1616a38e], td[data-v-1616a38e] {\n  min-width: 120px;\n  padding: 10px 20px;\n}\nth.active[data-v-1616a38e] {\n  color: #fff;\n}\nth.active .arrow[data-v-1616a38e] {\n  opacity: 1;\n}\ntd[data-v-1616a38e]:empty {\n  height: 2.75em;\n}\nli[data-v-1616a38e] {\n    display: inline-block;\n    margin: 4px;\n    zoom: 1;\n}\n.arrow[data-v-1616a38e] {\n  display: inline-block;\n  vertical-align: middle;\n  width: 0;\n  height: 0;\n  margin-left: 5px;\n  opacity: 0.66;\n}\n.arrow.asc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-bottom: 4px solid #fff;\n}\n.arrow.dsc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-top: 4px solid #fff;\n}\n", ""]);
+exports.push([module.i, "\nbody[data-v-1616a38e] {\n  font-family: Helvetica Neue, Arial, sans-serif;\n  font-size: 14px;\n  color: #444;\n}\n.paginator[data-v-1616a38e] {\n    font-size: 1.5em;\n}\na[data-v-1616a38e] {\n  cursor: pointer;\n}\ntable[data-v-1616a38e] {\n  /*border: 2px solid #42b983;*/\n  border: 2px solid #99c1bf;\n  border-radius: 3px;\n  background-color: #fff;\n  table-layout: fixed;\n  border-spacing: unset;\n  empty-cells: show;\n  width: 100%;\n}\nth[data-v-1616a38e] {\n  /*background-color: #42b983;*/\n  background-color: #99c1bf;\n  color: #fff;\n  cursor: pointer;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n  text-align: center;\n}\n\n/*td {\n  background-color: #f9f9f9;\n}*/\ntbody tr[data-v-1616a38e]:nth-child(odd) {\n    background-color: #f9f9f9;\n}\nth[data-v-1616a38e], td[data-v-1616a38e] {\n  min-width: 120px;\n  padding: 10px 20px;\n}\nth.active[data-v-1616a38e] {\n  color: #fff;\n}\nth.active .arrow[data-v-1616a38e] {\n  opacity: 1;\n}\ntd[data-v-1616a38e]:empty {\n  height: 2.75em;\n}\nli[data-v-1616a38e] {\n    display: inline-block;\n    width: 1.2em;\n    margin: 4px;\n    zoom: 1;\n}\n.arrow[data-v-1616a38e] {\n  display: inline-block;\n  vertical-align: middle;\n  width: 0;\n  height: 0;\n  margin-left: 5px;\n  opacity: 0.66;\n}\n.arrow.asc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-bottom: 4px solid #fff;\n}\n.arrow.dsc[data-v-1616a38e] {\n  border-left: 4px solid transparent;\n  border-right: 4px solid transparent;\n  border-top: 4px solid #fff;\n}\n", ""]);
 
 // exports
 
@@ -32196,105 +32148,51 @@ var render = function() {
     _vm._v(" "),
     _c("div", { staticClass: "row" }, [
       _c("div", { staticClass: "col-md-2" }, [
-        _vm._v(
-          "\n            Page " +
-            _vm._s(_vm.selected) +
-            " of " +
-            _vm._s(this.totalPages()) +
-            "\n        "
-        )
+        _vm._v("\n            Page "),
+        _c("em", [_vm._v(_vm._s(_vm.selected))]),
+        _vm._v(" of "),
+        _c("em", [_vm._v(_vm._s(_vm.totalPages))])
       ]),
       _vm._v(" "),
       _c("div", { staticClass: "col-md-6 col-md-offset-3" }, [
         _c(
           "ul",
-          { staticClass: "paginator" },
+          { staticClass: "paginator pull-right" },
           [
-            _c(
-              "li",
-              { class: [_vm.prevClass, { disabled: _vm.firstPageSelected() }] },
-              [
-                _c(
-                  "a",
-                  {
-                    class: _vm.prevLinkClass,
-                    attrs: { tabindex: "0" },
-                    on: {
-                      click: function($event) {
-                        _vm.prevPage()
-                      },
-                      keyup: function($event) {
-                        if (
-                          !("button" in $event) &&
-                          _vm._k($event.keyCode, "enter", 13)
-                        ) {
-                          return null
-                        }
-                        _vm.prevPage()
+            _c("li", { class: { hidden: _vm.firstPageSelected } }, [
+              _c(
+                "a",
+                {
+                  attrs: { tabindex: "0" },
+                  on: {
+                    click: function($event) {
+                      _vm.prevPage()
+                    },
+                    keyup: function($event) {
+                      if (
+                        !("button" in $event) &&
+                        _vm._k($event.keyCode, "enter", 13)
+                      ) {
+                        return null
                       }
+                      _vm.prevPage()
                     }
-                  },
-                  [_vm._t("prevContent", [_vm._v(_vm._s(_vm.prevText))])],
-                  2
-                )
-              ]
-            ),
+                  }
+                },
+                [_vm._t("prevContent", [_vm._v(_vm._s(_vm.prevText))])],
+                2
+              )
+            ]),
             _vm._v(" "),
             _vm._l(_vm.pages, function(page) {
-              return _c(
-                "li",
-                {
-                  class: [
-                    _vm.pageClass,
-                    page.selected ? _vm.activeClass : "",
-                    { disabled: page.disabled }
-                  ]
-                },
-                [
-                  page.disabled
-                    ? _c(
-                        "a",
-                        { class: _vm.pageLinkClass, attrs: { tabindex: "0" } },
-                        [_vm._v(_vm._s(page.content))]
-                      )
-                    : _c(
-                        "a",
-                        {
-                          class: _vm.pageLinkClass,
-                          attrs: { tabindex: "0" },
-                          on: {
-                            click: function($event) {
-                              _vm.filterHandler(page.content)
-                            },
-                            keyup: function($event) {
-                              if (
-                                !("button" in $event) &&
-                                _vm._k($event.keyCode, "enter", 13)
-                              ) {
-                                return null
-                              }
-                              _vm.handlePageSelected(page.content)
-                            }
-                          }
-                        },
-                        [_vm._v(_vm._s(page.content))]
-                      )
-                ]
-              )
-            }),
-            _vm._v(" "),
-            _c(
-              "li",
-              { class: [_vm.nextClass, { disabled: _vm.lastPageSelected() }] },
-              [
+              return _c("li", [
                 _c(
                   "a",
                   {
-                    class: _vm.nextLinkClass,
                     attrs: { tabindex: "0" },
                     on: {
                       click: function($event) {
-                        _vm.nextPage()
+                        _vm.filterHandler(page)
                       },
                       keyup: function($event) {
                         if (
@@ -32303,15 +32201,39 @@ var render = function() {
                         ) {
                           return null
                         }
-                        _vm.nextPage()
+                        _vm.handlePageSelected(page)
                       }
                     }
                   },
-                  [_vm._t("nextContent", [_vm._v(_vm._s(_vm.nextText))])],
-                  2
+                  [_vm._v(_vm._s(page))]
                 )
-              ]
-            )
+              ])
+            }),
+            _vm._v(" "),
+            _c("li", { class: { hidden: _vm.lastPageSelected } }, [
+              _c(
+                "a",
+                {
+                  attrs: { tabindex: "0" },
+                  on: {
+                    click: function($event) {
+                      _vm.nextPage()
+                    },
+                    keyup: function($event) {
+                      if (
+                        !("button" in $event) &&
+                        _vm._k($event.keyCode, "enter", 13)
+                      ) {
+                        return null
+                      }
+                      _vm.nextPage()
+                    }
+                  }
+                },
+                [_vm._t("nextContent", [_vm._v(_vm._s(_vm.nextText))])],
+                2
+              )
+            ])
           ],
           2
         )

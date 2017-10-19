@@ -81,7 +81,7 @@
                 <div class="title m-b-md">
                     Vue Grid
                 </div>  
-                <crypto-grid :columns="gridColumns" :hidden="hidden" :filterable="filterable" :widths="widths" :end-point="endPoint" :limit="limit">
+                <crypto-grid :columns="gridColumns" :hidden="hidden" :page-list="pages" :filterable="filterable" :widths="widths" :end-point="endPoint" :limit="limit">
                 </crypto-grid>
             </div>
         </div>
@@ -93,6 +93,7 @@
                     gridColumns: ['id', 'name', 'start_date', 'end_date', 'size', 'weight'],
                     filterable: ['name', 'start_date', 'end_date', 'size', 'weight'],
                     widths: ["30%", "20%", "20%", "15%", "15%"],
+                    pages: 10,
                     hidden: ['id'],
                     endPoint: "http://local.vuegrid.com:8000/",
                     limit: 10,

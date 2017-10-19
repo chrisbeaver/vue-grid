@@ -33,19 +33,18 @@
         </div>
         <div class="row">
             <div class="col-md-2">
-                Page {{ selected }} of {{ this.totalPages() }}
+                Page <em>{{ selected }}</em> of <em>{{ totalPages }}</em>
             </div>
             <div class="col-md-6 col-md-offset-3">
-                <ul class="paginator">
-                    <li :class="[prevClass, { disabled: firstPageSelected() }]">
-                        <a @click="prevPage()" @keyup.enter="prevPage()" :class="prevLinkClass" tabindex="0"><slot name="prevContent">{{ prevText }}</slot></a>
+                <ul class="paginator pull-right">
+                    <li :class="{ hidden: firstPageSelected }">
+                        <a @click="prevPage()" @keyup.enter="prevPage()" tabindex="0"><slot name="prevContent">{{ prevText }}</slot></a>
                     </li>
-                    <li v-for="page in pages" :class="[pageClass, page.selected ? activeClass : '', { disabled: page.disabled } ]">
-                        <a v-if="page.disabled" :class="pageLinkClass" tabindex="0">{{ page.content }}</a>
-                        <a v-else @click="filterHandler(page.content)" @keyup.enter="handlePageSelected(page.content)" :class="pageLinkClass" tabindex="0">{{ page.content }}</a>
+                    <li v-for="page in pages">
+                        <a @click="filterHandler(page)" @keyup.enter="handlePageSelected(page)" tabindex="0">{{ page }}</a>
                     </li>
-                    <li :class="[nextClass, { disabled: lastPageSelected() }]">
-                        <a @click="nextPage()" @keyup.enter="nextPage()" :class="nextLinkClass" tabindex="0"><slot name="nextContent">{{ nextText }}</slot></a>
+                    <li :class="{ hidden: lastPageSelected }">
+                        <a @click="nextPage()" @keyup.enter="nextPage()" tabindex="0"><slot name="nextContent">{{ nextText }}</slot></a>
                     </li>
                 </ul>
             </div>
@@ -62,6 +61,7 @@ module.exports = {
         filterKey: String,
         endPoint: String,
         limit: Number,
+        pageList: Number,
         pageRange: {
             type: Number,
             default: 3
@@ -76,11 +76,11 @@ module.exports = {
         },
         prevText: {
             type: String,
-            default: 'Prev'
+            default: '<<'
         },
         nextText: {
             type: String,
-            default: 'Next'
+            default: '>>'
         }
     },
     data: function () {
@@ -99,6 +99,18 @@ module.exports = {
         }
     },
     computed: {
+        firstPageSelected() {
+            return (this.selected === 1)
+        },
+        lastPageSelected() {
+            return (this.selected === this.pageCount - 1) || (this.pageCount === 0)
+        },
+        totalPages: function() {
+            let pages = Math.floor(this.total / this.limit);
+            if(this.total % this.limit)
+                pages++;
+            return pages;
+        },
         filteredData: function () {
             var sortKey = this.sortKey
             var filterKey = this.searchQuery && this.searchQuery.toLowerCase()
@@ -113,86 +125,30 @@ module.exports = {
                     data.push(spacer)
                 }
             }
-            // if (filterKey) {
-            //     data = this.data
-            // }
-            // if (sortKey) {
-            //     data = data.slice().sort(function (a, b) {
-            //         a = a[sortKey]
-            //         b = b[sortKey]
-            //         return (a === b ? 0 : a > b ? 1 : -1) * order
-            //     })
-            // }
             return data
         },
         pages: function () {
-            let items = {}
-            if (this.total <= this.pageRange) {
-                for (let index = 0; index < this.total; index++) {
-                    let page = {
-                        index: index,
-                        content: index + 1,
-                        selected: index === this.selected
-                    }
-                        items[index] = page
-                }
-            } 
-            else 
+            
+            if(this.selected < this.pageList) 
             {
-                let leftPart = this.pageRange / 2
-                let rightPart = this.pageRange - leftPart
-                if (this.selected < leftPart) {
-                    leftPart = this.selected
-                    rightPart = this.pageRange - leftPart
-                } 
-                else if (this.selected > this.total - this.pageRange / 2) {
-                    rightPart = this.total - this.selected
-                    leftPart = this.pageRange - rightPart
-                }
-                let setPageItem = index => {
-                    let page = {
-                        index: index,
-                        content: index + 1,
-                        selected: index === this.selected
-                    }
-                    items[index] = page
-                }
-                let setBreakView = index => {
-                    let breakView = {
-                        content: '...',
-                        disabled: true
-                    }
-                    items[index] = breakView
-                }
-                // 1st - loop thru low end of margin pages
-                for (let i = 0; i < this.marginPages; i++) {
-                    setPageItem(i);
-                }
-                // 2nd - loop thru high end of margin pages
-                for (let i = this.total - 1; i >= this.total - this.marginPages; i--) {
-                    setPageItem(i);
-                }
-                // 3rd - loop thru selected range
-                let selectedRangeLow = 0;
-                if (this.selected - this.pageRange > 0) {
-                    selectedRangeLow = this.selected - this.pageRange;
-                }
-                let selectedRangeHigh = this.total;
-                if (this.selected + this.pageRange < this.total) {
-                    selectedRangeHigh = this.selected + this.pageRange;
-                }
-                for (let i = selectedRangeLow; i <= selectedRangeHigh && i <= this.total - 1; i++) {
-                    setPageItem(i);
-                }
-                // Check if there is breakView in the left of selected range
-                if (selectedRangeLow > this.marginPages) {
-                    setBreakView(selectedRangeLow - 1)
-                }
-                // Check if there is breakView in the right of selected range
-                if (selectedRangeHigh + 1 < this.total - this.marginPages) {
-                    setBreakView(selectedRangeHigh + 1)
-                }
+                let p = [...Array(this.pageList + 1)].map((v, i) => i ); //Array(this.pageList + 1);
+                p.shift();
+                console.log(p);
+                return p; // [...Array(this.pageList + 1).keys()];
+            } else { 
+                let p = [...Array(this.pageList + 1)].map((v, i) => this.selected - this.pageList + i + 1);
+                p.shift();
+                console.log(p);
+                return p;
             }
+            // let items = [];
+            // let selected = this.selected;
+            // let half = (this.pageList - 1) / 2; 
+            
+            // for(let i = selected - half; i <= selected + half; i++)
+            // {
+            //     items.push(i);
+            // }
             console.log(items)
             return items;
         }
@@ -208,12 +164,6 @@ module.exports = {
             this.sortOrders[key] = this.sortOrders[key] * -1
             this.orderBy = key
             this.filterHandler(this.selected)
-        },
-        totalPages: function() {
-            let pages = Math.floor(this.total / this.limit);
-            if(this.total % this.limit)
-                pages++;
-            return pages;
         },
         filterHandler: function(selected) {
             this.selected = selected
@@ -251,12 +201,6 @@ module.exports = {
             if (this.selected >= this.pageCount - 1) return
             this.selected++
             this.filterHandler(this.selected)
-        },
-        firstPageSelected() {
-            return this.selected === 1
-        },
-        lastPageSelected() {
-            return (this.selected === this.pageCount - 1) || (this.pageCount === 0)
         }
     },
     created: function(){
@@ -336,6 +280,7 @@ td:empty {
 
 li {
     display: inline-block;
+    width: 1.2em;
     margin: 4px;
     zoom: 1;
 }
